@@ -11,10 +11,11 @@ steps:
       - go test
       - go build
     when:
-      event:
-      - pull_request
+      branch:
+        - develop
+        - master
 
-- name: Build image and publish
+  - name: Build image and publish
     image: plugins/docker
     settings:
       repo: rg.nl-ams.scw.cloud/revlabs/ldapauthd
