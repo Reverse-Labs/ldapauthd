@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	cli "github.com/jawher/mow.cli"
 	"github.com/labstack/echo"
@@ -36,7 +37,19 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 		err := authenticateLdap(username, password)
-		return err == nil, err
+		if err == nil {
+			if id, lerr := ldapQueryUser(username); lerr == nil {
+				ctx.Request().Header.Add("X-Forwarded-User", id.UserName)
+				ctx.Request().Header.Add("X-Forwarded-FullName", id.FullName)
+				ctx.Request().Header.Add("X-Forwarded-Groups", strings.Join(id.Groups, ","))
+				ctx.Request().Header.Add("X-Forwarded-Uid", id.UIDNumber)
+				ctx.Request().Header.Add("X-Forwarded-Gid", id.GIDNumber)
+			}
+
+			return true, err
+		}
+
+		return false, err
 	}))
 
 	e.Any("*", getAuthentication)
