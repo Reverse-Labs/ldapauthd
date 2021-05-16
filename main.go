@@ -37,13 +37,14 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 		err := authenticateLdap(username, password)
+
 		if err == nil {
 			if id, lerr := ldapQueryUser(username); lerr == nil {
-				ctx.Request().Header.Add("X-Forwarded-User", id.UserName)
-				ctx.Request().Header.Add("X-Forwarded-FullName", id.FullName)
-				ctx.Request().Header.Add("X-Forwarded-Groups", strings.Join(id.Groups, ","))
-				ctx.Request().Header.Add("X-Forwarded-Uid", id.UIDNumber)
-				ctx.Request().Header.Add("X-Forwarded-Gid", id.GIDNumber)
+				ctx.Response().Header().Set("X-Forwarded-User", id.UserName)
+				ctx.Response().Header().Add("X-Forwarded-FullName", id.FullName)
+				ctx.Response().Header().Add("X-Forwarded-Groups", strings.Join(id.Groups, ","))
+				ctx.Response().Header().Add("X-Forwarded-Uid", id.UIDNumber)
+				ctx.Response().Header().Add("X-Forwarded-Gid", id.GIDNumber)
 			}
 
 			return true, err

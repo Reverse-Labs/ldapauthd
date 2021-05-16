@@ -44,18 +44,17 @@ func ldapQueryUser(username string) (Identity, error) {
 	filter := fmt.Sprintf(ldapFilter, ldap.EscapeFilter(username))
 
 	searchReq := ldap.NewSearchRequest(
-		baseDN, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, []string{"inetuser"}, []ldap.Control{},
+		baseDN, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, []string{}, []ldap.Control{},
 	)
 
 	results, err := conn.Search(searchReq)
-
 	if len(results.Entries) > 0 && err == nil {
 		return Identity{
-			FullName:  results.Entries[1].GetAttributeValue("cn"),
-			UserName:  results.Entries[1].GetAttributeValue("uid"),
-			Groups:    results.Entries[1].GetAttributeValues("objectClass"),
-			UIDNumber: results.Entries[1].GetAttributeValue("uidNumber"),
-			GIDNumber: results.Entries[1].GetAttributeValue("gidNumber"),
+			FullName:  results.Entries[0].GetAttributeValue("cn"),
+			UserName:  results.Entries[0].GetAttributeValue("uid"),
+			Groups:    results.Entries[0].GetAttributeValues("objectClass"),
+			UIDNumber: results.Entries[0].GetAttributeValue("uidNumber"),
+			GIDNumber: results.Entries[0].GetAttributeValue("gidNumber"),
 		}, nil
 	}
 
